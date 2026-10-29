@@ -3,8 +3,9 @@
 // =============================================
 (function () {
   const C = SG.CONFIG;
+  const T = I18N.t;
   const $ = s => document.querySelector(s);
-  const LEVEL_NAME = { easy: 'CPU よわい', normal: 'CPU ふつう', hard: 'CPU つよい' };
+  const LEVEL_NAME = lv => T('cpu_lv', { lv: T(lv) });
 
   const st = {
     level: 'normal', me: null, opp: null, ai: null, mode: 'cpu', room: null, watch: false,
@@ -47,7 +48,7 @@
     st.level = b.dataset.level;
     st.wins = [0, 0];
     setMode2('cpu');
-    setNames('あなた', LEVEL_NAME[st.level]);
+    setNames(T('you'), LEVEL_NAME(st.level));
     show('game');
     startMatch();
   }));
@@ -63,7 +64,7 @@
       if (st.watch) return;
       st.room.rematch();
       $('#btn-again').disabled = true;
-      $('#again-msg').textContent = 'あいての「もう一回」を待っています…';
+      $('#again-msg').textContent = T('wait_rematch');
     } else startMatch();
   });
   $('#btn-sound').addEventListener('click', () => {
@@ -157,11 +158,11 @@
       const good = win === true || typeof win === 'number';
       good ? SG.Sound.win() : SG.Sound.lose();
       const h = $('#result-title');
-      h.textContent = text || (win ? 'かち！' : 'まけ…');
+      h.textContent = text || (win ? T('win') : T('lose'));
       h.className = good ? 'win' : 'lose';
       $('#btn-again').disabled = false;
       $('#btn-again').style.display = st.watch || note ? 'none' : '';
-      $('#again-msg').textContent = note || (st.watch ? '次の試合が始まるまで待っています…' : '');
+      $('#again-msg').textContent = note || (st.watch ? T('wait_next') : '');
       $('#res-score').textContent = st.me.score.toLocaleString();
       $('#res-chain').textContent = st.me.maxChain;
       $('#res-flip').textContent = st.flipsUsed;
@@ -197,7 +198,7 @@
           if (n !== st.lastCount) {
             st.lastCount = n;
             const el = $('#count-num');
-            el.textContent = n > 0 ? n : 'スタート！';
+            el.textContent = n > 0 ? n : T('start');
             el.style.fontSize = n > 0 ? '' : '64px';
             el.style.animation = 'none'; void el.offsetWidth; el.style.animation = '';
             n > 0 ? SG.Sound.count() : SG.Sound.go();
@@ -261,13 +262,13 @@
   function loadScript(src) {
     return new Promise((res, rej) => {
       const el = document.createElement('script');
-      el.src = src; el.onload = res; el.onerror = () => rej(new Error('通信できませんでした。電波のよいところでもう一度ためしてください'));
+      el.src = src; el.onload = res; el.onerror = () => rej(new Error(T('err_net')));
       document.head.appendChild(el);
     });
   }
   async function getDb() {
     if (SG._db) return SG._db;
-    if (!SG.FIREBASE_CONFIG || !SG.FIREBASE_CONFIG.apiKey) throw new Error('オンライン対戦はまだ準備中です');
+    if (!SG.FIREBASE_CONFIG || !SG.FIREBASE_CONFIG.apiKey) throw new Error(T('err_notready'));
     const v = '10.12.2';
     await loadScript('https://www.gstatic.com/firebasejs/' + v + '/firebase-app-compat.js');
     await loadScript('https://www.gstatic.com/firebasejs/' + v + '/firebase-database-compat.js');
@@ -293,9 +294,9 @@
   });
   $('#btn-copy').addEventListener('click', async () => {
     const url = location.origin + location.pathname + '?room=' + encodeURIComponent(st.room ? st.room.code : '');
-    try { await navigator.clipboard.writeText(url); $('#btn-copy').textContent = 'コピーしました！'; }
-    catch (e) { prompt('このリンクを送ってください', url); }
-    setTimeout(() => { $('#btn-copy').textContent = 'さそうリンクをコピー'; }, 2000);
+    try { await navigator.clipboard.writeText(url); $('#btn-copy').textContent = T('copied'); }
+    catch (e) { prompt(T('send_link'), url); }
+    setTimeout(() => { $('#btn-copy').textContent = T('copy_link'); }, 2000);
   });
   $('#btn-join').addEventListener('click', joinOnline);
 
@@ -304,7 +305,7 @@
     game: 'sakasama', ver: 'v1', name: 'さかさまドロップ',
     getDb, anchor: '#btn-online', anchorWhere: 'before', btnClass: 'btn wide online-btn', nextClass: 'btn wide', nameKey: 'sakasama-name',
     join: (code, name) => { SG.Sound.init(); $('#in-code').value = code; $('#in-name').value = name; joinOnline(); },
-    cpu: () => document.querySelector('[data-level="normal"]').click(), cpuLabel: 'CPU（ふつう）と遊びながら待つ',
+    cpu: () => document.querySelector('[data-level="normal"]').click(), cpuLabel: () => T('cpu_wait_label'),
     quit: toTitle,
     colors: { main: 'var(--pink)', alt: '#6c5ce7', bg: '#241a57', fg: 'var(--ink)', err: 'var(--pink2)' },
   });
@@ -313,10 +314,10 @@
 
   async function joinOnline() {
     const code = SG.cleanCode($('#in-code').value);
-    const name = $('#in-name').value.trim().slice(0, 8) || 'ななし';
-    if (!code) { $('#online-err').textContent = 'あいことばを入れてください（. # $ / [ ] は使えません）'; return; }
+    const name = $('#in-name').value.trim().slice(0, 8) || T('noname');
+    if (!code) { $('#online-err').textContent = T('err_code'); return; }
     try { localStorage.setItem('sakasama-name', name); } catch (e) {}
-    $('#online-err').textContent = ''; $('#btn-join').disabled = true; $('#btn-join').textContent = 'つないでいます…';
+    $('#online-err').textContent = ''; $('#btn-join').disabled = true; $('#btn-join').textContent = T('connecting');
     try {
       const db = await getDb();
       st.myName = name;
@@ -330,13 +331,13 @@
       await room.join();
       setMode2('online', room.slot < 0);
       $('#wait-code').textContent = room.code;
-      $('#wait-msg').textContent = room.slot < 0 ? '観戦で入りました。試合が始まるのを待っています…' : 'あいてを待っています…';
+      $('#wait-msg').textContent = room.slot < 0 ? T('watch_in') : T('waiting');
       lobby(true);
     } catch (e) {
-      $('#online-err').textContent = e.message || 'つながりませんでした';
+      $('#online-err').textContent = e.message || T('err_conn');
       if (st.room) { st.room.leave(); st.room = null; }
     }
-    $('#btn-join').disabled = false; $('#btn-join').textContent = 'はいる';
+    $('#btn-join').disabled = false; $('#btn-join').textContent = T('join');
   }
 
   function onPeople(p) {
@@ -344,7 +345,7 @@
     const names = p.names;
     $('#watchers').textContent = p.watchers ? '👀' + p.watchers : '';
     if (st.room && st.room.slot >= 0 && !names[1 - st.room.slot] && $('#ov-online').classList.contains('show')) {
-      $('#wait-msg').textContent = 'あいてを待っています…';
+      $('#wait-msg').textContent = T('waiting');
     }
   }
 
@@ -402,12 +403,12 @@
       // 最後の盤面を送っておく（観戦者用）
       room.sendBoard(SG.packBoard(st.me, st.myName));
       const win = r.loser !== room.slot;
-      if (win && r.why === 'left' && QM.isRandom()) finish(true, 'かち！', '相手が抜けたので、あなたの勝ち！');
-      else finish(win, win ? (r.why === 'left' ? 'かち！（あいてが退室）' : 'かち！') : 'まけ…');
+      if (win && r.why === 'left' && QM.isRandom()) finish(true, T('win'), T('left_win'));
+      else finish(win, win ? (r.why === 'left' ? T('win_left') : T('win')) : T('lose'));
     } else {
       const names = [$('#me-name').textContent, $('#cpu-name').textContent];
       const w = 1 - r.loser;
-      finish(w, names[w] + ' のかち！');
+      finish(w, T('x_win', { name: names[w] }));
     }
   }
 

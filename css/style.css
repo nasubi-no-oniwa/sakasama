@@ -354,3 +354,32 @@ body.watching .stats { display: none; }
 .menu-sub .btn { width: 100%; font-size: 15px; padding: 12px 8px; }
 a.btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; color: inherit; }
 a.btn.garden { color: var(--ink); }
+
+/* ことばの切りかえ */
+.langs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.langs button{font:800 13px var(--font);background:rgba(255,255,255,.06);color:var(--muted);border:1.5px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--cyan);color:#0c3c4d;border-color:var(--cyan)}
+html[data-lang="ko"] .logo{font-family:'Do Hyeon',var(--font);font-weight:400}
+/* タイトルが画面に収まらないときはスクロール（上が切れないように） */
+#title { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.title-box { margin: auto; }
+.langs { margin: 2px 0 0; }
+@media (min-height: 521px) and (max-height: 820px) {
+  .title-box { padding: 12px 0 16px; }
+  .tagline { margin: 10px 0 14px; }
+  .menu { gap: 10px; }
+}
+@media (min-height: 521px) and (max-height: 700px) {
+  .logo-top { font-size: 44px; }
+  .logo-bottom { font-size: 30px; margin-top: 2px; }
+  .tagline { font-size: 13px; line-height: 1.55; }
+  .btn { padding: 11px 14px; font-size: 16px; }
+  .btn.lv { padding: 12px 0; font-size: 16px; }
+  .menu-card { padding: 10px 10px 14px; }
+  .menu-label { margin-bottom: 8px; }
+  .land-tip { font-size: 11px; line-height: 1.5; }
+}
+html[data-lang="en"] .menu-sub .btn { font-size: 14px; letter-spacing: 0; }
+html[data-lang="en"] .tagline, html[data-lang="en"] .land-tip { letter-spacing: 0; }
+html[data-lang="en"] .logo-top { font-size: clamp(30px, 10vw, 50px); gap: .28em; }
+@media (max-height: 700px) { html[data-lang="en"] .logo-top { font-size: 32px; } }

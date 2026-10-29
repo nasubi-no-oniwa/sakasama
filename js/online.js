@@ -19,7 +19,7 @@
     constructor(db, code, name, cb) {
       this.db = db;
       this.code = clean(code);
-      this.name = (window.QM ? QM.ng(name) : String(name || '').trim().slice(0, 8)) || 'ななし';
+      this.name = (window.QM ? QM.ng(name) : String(name || '').trim().slice(0, 8)) || (window.I18N ? I18N.t('noname') : 'ななし');
       this.cb = cb || {};
       this.id = uid();
       this.slot = -1;             // 0/1=対戦者  -1=観戦
@@ -39,7 +39,7 @@
     on(ref, ev, fn) { ref.on(ev, fn); this.subs.push([ref, ev, fn]); }
 
     async join() {
-      if (!this.code) throw new Error('合言葉を入れてください');
+      if (!this.code) throw new Error(window.I18N ? I18N.t('err_code_short') : '合言葉を入れてください');
       const off = this.db.ref('.info/serverTimeOffset');
       this.on(off, 'value', s => { this.offset = s.val() || 0; });
 

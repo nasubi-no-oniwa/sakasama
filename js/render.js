@@ -4,6 +4,13 @@
 (function () {
   const C = SG.CONFIG;
   const G = () => SG.GARBAGE;
+  const T = I18N.t;
+  // 盤面の幅に収まるように文字の大きさを決める
+  function fitFont(ctx, txt, px, maxW) {
+    const f = p => `900 ${p}px "M PLUS Rounded 1c", "Do Hyeon", system-ui, sans-serif`;
+    ctx.font = f(px); const w = ctx.measureText(txt).width;
+    if (w > maxW) ctx.font = f(Math.max(8, Math.floor(px * maxW / w)));
+  }
 
   // つぶの色と印（色が見分けにくい人でも印で分かる）
   const PALETTE = {
@@ -202,25 +209,26 @@
       if (pl.chainLabel) {
         const t = pl.chainLabel.t / 1100, pop = t > 0.85 ? 1 + (t - 0.85) * 3 : 1;
         ctx.save(); ctx.globalAlpha = Math.min(1, t * 3);
-        ctx.font = `900 ${Math.round(s * 0.95 * pop)}px "M PLUS Rounded 1c", system-ui, sans-serif`;
+        const txt = T('chain_n', { n: pl.chainLabel.n });
+        fitFont(ctx, txt, Math.round(s * 0.95 * pop), W * 0.94);
         ctx.lineWidth = s * 0.18; ctx.strokeStyle = '#1b1240'; ctx.lineJoin = 'round';
-        const txt = pl.chainLabel.n + 'れんさ！', ty = H * 0.42 - (1 - t) * s;
+        const ty = H * 0.42 - (1 - t) * s;
         ctx.strokeText(txt, W / 2, ty); ctx.fillStyle = '#fff36b'; ctx.fillText(txt, W / 2, ty);
         ctx.restore();
       }
       if (pl.flipLabel > 0) {
         const t = pl.flipLabel / 1400;
         ctx.save(); ctx.globalAlpha = Math.min(1, t * 2.5);
-        ctx.font = `900 ${Math.round(s * 1.05)}px "M PLUS Rounded 1c", system-ui, sans-serif`;
+        const tf = T('c_flip'); fitFont(ctx, tf, Math.round(s * 1.05), W * 0.94);
         ctx.lineWidth = s * 0.2; ctx.strokeStyle = '#1b1240'; ctx.lineJoin = 'round';
-        ctx.strokeText('さかさま！', W / 2, H * 0.24); ctx.fillStyle = '#6ef0ff'; ctx.fillText('さかさま！', W / 2, H * 0.24);
+        ctx.strokeText(tf, W / 2, H * 0.24); ctx.fillStyle = '#6ef0ff'; ctx.fillText(tf, W / 2, H * 0.24);
         ctx.restore();
       }
       if (pl.flipReserved && pl.phase !== 'anim' && !pl.dead) {
         const blink = 0.85 + 0.15 * Math.sin(now / 150);
         ctx.save(); ctx.globalAlpha = blink;
-        ctx.font = `900 ${Math.round(Math.max(9, s * 0.42))}px "M PLUS Rounded 1c", system-ui, sans-serif`;
-        const label = 'さかさま予約中', tw = ctx.measureText(label).width + s * 0.6, th = s * 0.62;
+        const label = T('c_reserved'); fitFont(ctx, label, Math.round(Math.max(9, s * 0.42)), W * 0.86 - s * 0.6);
+        const tw = ctx.measureText(label).width + s * 0.6, th = s * 0.62;
         ctx.fillStyle = 'rgba(88,230,255,0.9)';
         ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, s * 0.62, tw, th, th / 2) : ctx.rect(W / 2 - tw / 2, s * 0.62, tw, th); ctx.fill();
         ctx.fillStyle = '#0c3c4d'; ctx.fillText(label, W / 2, s * 0.62 + th / 2 + 1);
@@ -229,25 +237,25 @@
       if (pl.allClearLabel > 0) {
         const t = pl.allClearLabel / 1600;
         ctx.save(); ctx.globalAlpha = Math.min(1, t * 2.5);
-        ctx.font = `900 ${Math.round(s * 1.0)}px "M PLUS Rounded 1c", system-ui, sans-serif`;
+        const ta = T('c_allclear'); fitFont(ctx, ta, Math.round(s * 1.0), W * 0.94);
         ctx.lineWidth = s * 0.2; ctx.strokeStyle = '#1b1240'; ctx.lineJoin = 'round';
-        ctx.strokeText('ぜんけし！', W / 2, H * 0.55); ctx.fillStyle = '#9dffb8'; ctx.fillText('ぜんけし！', W / 2, H * 0.55);
+        ctx.strokeText(ta, W / 2, H * 0.55); ctx.fillStyle = '#9dffb8'; ctx.fillText(ta, W / 2, H * 0.55);
         ctx.restore();
       }
       if (pl.cancelLabel > 0) {
         const t = pl.cancelLabel / 1600, sc = t > 0.85 ? 1 + (t - 0.85) * 4 : 1;
         ctx.save(); ctx.globalAlpha = Math.min(1, t * 2.5);
-        ctx.font = `900 ${Math.round(s * 1.0 * sc)}px "M PLUS Rounded 1c", system-ui, sans-serif`;
+        const tc = T('c_cancel'); fitFont(ctx, tc, Math.round(s * 1.0 * sc), W * 0.94);
         ctx.lineWidth = s * 0.2; ctx.strokeStyle = '#1b1240'; ctx.lineJoin = 'round';
-        ctx.strokeText('うちけし！', W / 2, H * 0.24); ctx.fillStyle = '#ffe45e'; ctx.fillText('うちけし！', W / 2, H * 0.24);
+        ctx.strokeText(tc, W / 2, H * 0.24); ctx.fillStyle = '#ffe45e'; ctx.fillText(tc, W / 2, H * 0.24);
         ctx.restore();
       }
       if (pl.marginLabel > 0 && pl.flipLabel <= 0) {
         const t = pl.marginLabel / 1400;
         ctx.save(); ctx.globalAlpha = Math.min(1, t * 2.5);
-        ctx.font = `900 ${Math.round(s * 0.7)}px "M PLUS Rounded 1c", system-ui, sans-serif`;
+        const tu = T('c_atkup'); fitFont(ctx, tu, Math.round(s * 0.7), W * 0.94);
         ctx.lineWidth = s * 0.16; ctx.strokeStyle = '#1b1240'; ctx.lineJoin = 'round';
-        ctx.strokeText('こうげきアップ！', W / 2, H * 0.3); ctx.fillStyle = '#ff9cc7'; ctx.fillText('こうげきアップ！', W / 2, H * 0.3);
+        ctx.strokeText(tu, W / 2, H * 0.3); ctx.fillStyle = '#ff9cc7'; ctx.fillText(tu, W / 2, H * 0.3);
         ctx.restore();
       }
       if (pl.dead) {
